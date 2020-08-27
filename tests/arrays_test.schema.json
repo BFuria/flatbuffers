@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
   "definitions": {
     "MyGame_Example_TestEnum" : {
       "type" : "string",
@@ -18,6 +18,11 @@
               },
         "c" : {
                 "$ref" : "#/definitions/MyGame_Example_TestEnum",
+                "minItems": 2,
+                "maxItems": 2
+              },
+        "d" : {
+                "type" : "array", "items" : { "type" : "number" },
                 "minItems": 2,
                 "maxItems": 2
               }
@@ -40,6 +45,14 @@
               },
         "d" : {
                 "type" : "array", "items" : { "$ref" : "#/definitions/MyGame_Example_NestedStruct" },
+                "minItems": 2,
+                "maxItems": 2
+              },
+        "e" : {
+                "type" : "number"
+              },
+        "f" : {
+                "type" : "array", "items" : { "type" : "number" },
                 "minItems": 2,
                 "maxItems": 2
               }

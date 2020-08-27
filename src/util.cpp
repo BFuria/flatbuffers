@@ -16,6 +16,10 @@
 
 // clang-format off
 // Dont't remove `format off`, it prevent reordering of win-includes.
+
+#  define _POSIX_C_SOURCE 200809L
+#  define _XOPEN_SOURCE 700L
+
 #ifdef _WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
@@ -30,8 +34,6 @@
 #  include <direct.h>
 #  include <winbase.h>
 #  undef interface  // This is also important because of reasons
-#else
-#  include <limits.h>
 #endif
 // clang-format on
 
@@ -40,6 +42,7 @@
 
 #include <sys/stat.h>
 #include <clocale>
+#include <cstdlib>
 #include <fstream>
 
 namespace flatbuffers {
@@ -127,12 +130,12 @@ static const char kPathSeparatorWindows = '\\';
 static const char *PathSeparatorSet = "\\/";  // Intentionally no ':'
 
 std::string StripExtension(const std::string &filepath) {
-  size_t i = filepath.find_last_of(".");
+  size_t i = filepath.find_last_of('.');
   return i != std::string::npos ? filepath.substr(0, i) : filepath;
 }
 
 std::string GetExtension(const std::string &filepath) {
-  size_t i = filepath.find_last_of(".");
+  size_t i = filepath.find_last_of('.');
   return i != std::string::npos ? filepath.substr(i + 1) : "";
 }
 
@@ -194,8 +197,14 @@ std::string AbsolutePath(const std::string &filepath) {
       char abs_path[MAX_PATH];
       return GetFullPathNameA(filepath.c_str(), MAX_PATH, abs_path, nullptr)
     #else
-      char abs_path[PATH_MAX];
-      return realpath(filepath.c_str(), abs_path)
+      char *abs_path_temp = realpath(filepath.c_str(), nullptr);
+      bool success = abs_path_temp != nullptr;
+      std::string abs_path;
+      if(success) {
+        abs_path = abs_path_temp;
+        free(abs_path_temp);
+      }
+      return success
     #endif
       ? abs_path
       : filepath;
@@ -240,9 +249,9 @@ bool SetGlobalTestLocale(const char *locale_name, std::string *_value) {
 }
 
 bool ReadEnvironmentVariable(const char *var_name, std::string *_value) {
-  #ifdef _MSC_VER
-  __pragma(warning(disable : 4996)); // _CRT_SECURE_NO_WARNINGS
-  #endif
+#ifdef _MSC_VER
+  __pragma(warning(disable : 4996));  // _CRT_SECURE_NO_WARNINGS
+#endif
   auto env_str = std::getenv(var_name);
   if (!env_str) return false;
   if (_value) *_value = std::string(env_str);

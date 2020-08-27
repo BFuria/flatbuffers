@@ -540,9 +540,9 @@ namespace FlatBuffers
         /// </summary>
         /// <param name="o">The index into the vtable</param>
         /// <param name="x">The value to put into the buffer. If the value is equal to the default
-        /// and <see cref="ForceDefaults"/> is false, the value will be skipped.</param>
+        /// the value will be skipped.</param>
         /// <param name="d">The default value to compare the value against</param>
-        public void AddOffset(int o, int x, int d) { if (ForceDefaults || x != d) { AddOffset(x); Slot(o); } }
+        public void AddOffset(int o, int x, int d) { if (x != d) { AddOffset(x); Slot(o); } }
         /// @endcond
 
         /// <summary>
@@ -554,6 +554,10 @@ namespace FlatBuffers
         /// </returns>
         public StringOffset CreateString(string s)
         {
+            if (s == null)
+            {
+                return new StringOffset(0);
+            }
             NotNested();
             AddByte(0);
             var utf8StringLen = Encoding.UTF8.GetByteCount(s);
@@ -594,6 +598,11 @@ namespace FlatBuffers
         /// </returns>
         public StringOffset CreateSharedString(string s)
         {
+            if (s == null)
+            {
+              return new StringOffset(0);
+            }
+
             if (_sharedStringMap == null)
             {
                 _sharedStringMap = new Dictionary<string, StringOffset>();
